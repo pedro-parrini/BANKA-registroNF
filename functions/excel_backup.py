@@ -9,7 +9,7 @@ def backup_planilha(planilha="Banka l Planilha Gerencial.xlsx"):
     msg = EmailMessage()
     msg['From'] = email_origem
     msg['Subject']  = f'Backup Planilha Gerencial {datetime.now().strftime("%d/%m/%Y")}'
-    msg['To'] = ['pedro.parrini@equityrio.com.br','brunodnpeniche@gmail.com', 'financeiro.banka@gmail.com']
+    msg['To'] = ['pedro.parrini@equityrio.com.br', 'brunodnpeniche@gmail.com', 'financeiro.banka@gmail.com', 'vqf.banka@gmail.com']
 
     mensagem = f''' 
 
