@@ -1,5 +1,8 @@
-pandas==2.1.1
-streamlit==1.28.2
-DateTime==5.3
-openpyxl==3.1.2
-plotly==5.24.1
+streamlit
+pandas
+openpyxl
+plotly
+pytz
+gspread
+google-auth
+google-api-python-client
