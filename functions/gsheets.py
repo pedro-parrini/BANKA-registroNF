@@ -63,7 +63,7 @@ def append_lancamento(loja: str, dados: dict):
         dados.get("Fornecedor", ""),
         dados.get("Banca", ""),
         dados.get("Família", ""),
-        dados.get("Custo de Aquisição", ""),
+        float(dados.get("Custo de Aquisição", 0) or 0),
         dados.get("Tipo", ""),
     ]
 
@@ -104,20 +104,49 @@ def get_ids_existentes() -> list:
     return ids
 
 
+COLUNAS_LANCAMENTO = [
+    "ID number",
+    "Data 1 (lançamento pgto)",
+    "Data 2 (dia do pgto)",
+    "Fornecedor",
+    "Banca",
+    "Família",
+    "Custo de Aquisição",
+    "Tipo",
+]
+
+
 def get_lancamentos_para_merge() -> list:
     """
     Retorna todos os lançamentos das 3 bancas e os IDs a cancelar.
-    Usado pelo financeiro na sincronização.
+    Usa get_all_values() em vez de get_all_records() para evitar
+    conversão automática incorreta de números decimais pelo gspread.
     Retorna: (lista de dicts com lançamentos, lista de IDs para cancelar)
     """
     lancamentos = []
     for aba in ["BaixoGavea", "SaoConrado", "Tijuca"]:
         sheet = get_sheet(aba)
-        registros = sheet.get_all_records()
-        lancamentos += registros
+        rows = sheet.get_all_values()
+        if len(rows) <= 1:
+            continue  # Só cabeçalho ou vazia
+
+        cabecalho = rows[0]
+        for row in rows[1:]:
+            registro = dict(zip(cabecalho, row))
+
+            # Converter Custo de Aquisição para float preservando decimais
+            custo_raw = registro.get("Custo de Aquisição", "0")
+            try:
+                # Substitui vírgula por ponto caso venha no formato brasileiro
+                registro["Custo de Aquisição"] = float(str(custo_raw).replace(",", "."))
+            except (ValueError, TypeError):
+                registro["Custo de Aquisição"] = 0.0
+
+            lancamentos.append(registro)
 
     sheet_cancel = get_sheet("Cancelamentos")
-    cancelamentos = [r.get("ID number", "") for r in sheet_cancel.get_all_records()]
+    rows_cancel = sheet_cancel.get_all_values()
+    cancelamentos = [row[0] for row in rows_cancel[1:] if row and row[0]]
 
     # Filtrar lançamentos removendo os cancelados
     lancamentos_validos = [

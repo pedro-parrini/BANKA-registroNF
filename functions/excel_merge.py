@@ -42,6 +42,12 @@ def sincronizar_para_gerencial():
 
     if lancamentos_validos:
         df_novos = pd.DataFrame(lancamentos_validos, columns=COLUNAS)
+
+        # Garantir que Custo de Aquisição seja numérico (Google Sheets retorna strings)
+        df_novos["Custo de Aquisição"] = pd.to_numeric(
+            df_novos["Custo de Aquisição"], errors="coerce"
+        ).fillna(0.0)
+
         df_final = pd.concat([df_atual, df_novos], ignore_index=True)
     else:
         df_final = df_atual
